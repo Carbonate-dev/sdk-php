@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  chrome:
+    image: nextnextools/chromium
+    ports:
+      - "9222"
+    stop_signal: SIGKILL
