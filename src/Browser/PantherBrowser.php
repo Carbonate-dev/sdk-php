@@ -1,6 +1,6 @@
 <?php
 
-namespace Carbonate\Tester;
+namespace Carbonate\Browser;
 
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Carbonate\Action;
@@ -30,19 +30,18 @@ class PantherBrowser implements BrowserInterface
     public function load($url, $whitelist = [])
     {
         $this->browser->start();
-        $this->browser->getWebDriver()->executeCustomCommand('/session/:sessionId/chromium/send_command', 'POST', [
-            'cmd' => 'Page.addScriptToEvaluateOnNewDocument',
-            'params' => (object)[
-                "source" => $this->injectJs,
-            ],
-        ]);
-        $this->browser->getWebDriver()->executeCustomCommand('/session/:sessionId/chromium/send_command', 'POST', [
-            'cmd' => 'Page.addScriptToEvaluateOnNewDocument',
-            'params' => (object)[
-                "source" => 'window.__set_xhr_whitelist(' . json_encode($whitelist) . ')',
-            ],
-        ]);
+
+        if ($this->evaluateScript('return typeof window.carbonate_dom_updating === "undefined"')) {
+            $this->browser->getWebDriver()->executeCustomCommand('/session/:sessionId/chromium/send_command', 'POST', [
+                'cmd' => 'Page.addScriptToEvaluateOnNewDocument',
+                'params' => (object)[
+                    "source" => $this->injectJs,
+                ],
+            ]);
+        }
+
         $this->browser->get($url);
+        $this->evaluateScript('window.carbonate_set_xhr_whitelist(' . json_encode($whitelist) . ')');
     }
 
     public function close()
@@ -50,15 +49,15 @@ class PantherBrowser implements BrowserInterface
         $this->browser->quit();
     }
 
-    /**
-     * @return string
-     * @throws UnsupportedDriverActionException
-     * @throws \Behat\Mink\Exception\DriverException
-     */
-    public function getScreenshot()
-    {
-        return $this->browser->takeScreenshot();
-    }
+//    /**
+//     * @return string
+//     * @throws UnsupportedDriverActionException
+//     * @throws \Behat\Mink\Exception\DriverException
+//     */
+//    public function getScreenshot()
+//    {
+//        return $this->browser->takeScreenshot();
+//    }
 
     /**
      * @param $xpath
@@ -100,13 +99,31 @@ class PantherBrowser implements BrowserInterface
         if ($action['action'] == Action::CLICK) {
             $elements[0]->click();
         } elseif ($action['action'] == Action::TYPE) {
+            $nonTypeable = ['date', 'datetime-local', 'month', 'time', 'week', 'color', 'range'];
+            if ($elements[0]->getTagName() == 'input' && in_array($elements[0]->getAttribute('type'), $nonTypeable)) {
+                // Not ideal but filling via the UI is not currently possible
+                $this->browser->executeScript(
+                    "arguments[0].value = arguments[1]; ".
+                    // Trigger onchange manually
+                    "arguments[0].dispatchEvent(new Event('change'), {bubbles: true});",
+                    [$elements[0], $action['text']]
+                );
+                return;
+            }
             if ($elements[0]->getTagName() == 'label') {
                 $elements = $this->findById($elements[0]->getAttribute('for'));
             }
 
             $elements[0]->sendKeys($action['text']);
+
+            $this->evaluateScript('!!document.activeElement ? document.activeElement.blur() : 0');
         } elseif ($action['action'] == Action::KEY) {
             $elements[0]->sendKeys($action['key']);
         }
+    }
+
+    public function getLogs()
+    {
+        return $this->browser->getWebDriver()->manage()->getLog('browser');
     }
 }

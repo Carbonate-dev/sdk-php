@@ -4,7 +4,7 @@ namespace Tests\Full;
 
 use Carbonate\Api\Client;
 use Carbonate\SDK;
-use Carbonate\Tester\PantherBrowser;
+use Carbonate\Browser\PantherBrowser;
 use Symfony\Component\Panther\Client as PantherClient;
 use Symfony\Component\Panther\PantherTestCase;
 use Tests\End2End\Panther\WaitTest;
@@ -14,25 +14,25 @@ class CarbonateTestFormTest extends PantherTestCase
     /**
      * @var PantherBrowser
      */
-    protected $browser;
+    protected static $browser;
 
     /**
      * @var SDK
      */
     protected $sdk;
 
-    public function __construct(?string $name = null, array $data = [], $dataName = '')
+    public static function setUpBeforeClass(): void
     {
-        parent::__construct($name, $data, $dataName);
+        parent::setUpBeforeClass();
 
-        $this->browser = new PantherBrowser(PantherClient::createChromeClient());
+        self::$browser = new PantherBrowser(self::createPantherClient(['external_base_uri' => '']));
     }
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->sdk = new SDK($this->browser, __DIR__ .'/'. pathinfo(__FILE__, PATHINFO_FILENAME));
+        $this->sdk = new SDK(self::$browser, null);
         $this->sdk->startTest(__CLASS__, $this->getName());
     }
 

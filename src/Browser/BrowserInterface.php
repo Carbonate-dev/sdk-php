@@ -1,6 +1,6 @@
 <?php
 
-namespace Carbonate\Tester;
+namespace Carbonate\Browser;
 
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 
@@ -11,13 +11,6 @@ interface BrowserInterface
     public function load($url, $whitelist = []);
 
     public function close();
-
-    /**
-     * @return string
-     * @throws UnsupportedDriverActionException
-     * @throws \Behat\Mink\Exception\DriverException
-     */
-    public function getScreenshot();
 
     /**
      * @param $xpath

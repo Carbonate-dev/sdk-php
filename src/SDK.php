@@ -8,8 +8,7 @@ use Carbonate\Exceptions\BrowserException;
 use Carbonate\Exceptions\FailedExtractionException;
 use Carbonate\Exceptions\InvalidXpathException;
 use Carbonate\PhpUnit\Logger;
-use Carbonate\Tester\MinkBrowser;
-use Carbonate\Tester\BrowserInterface;
+use Carbonate\Browser\BrowserInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -34,6 +33,7 @@ class SDK
     private $testName;
     private $cacheDir;
     private $networkWhitelist = [];
+    private $instructionCache = [];
 
     public function __construct(
         BrowserInterface $browser,
@@ -59,15 +59,15 @@ class SDK
         return $this->testName;
     }
 
-    public function waitForLoad($skip_func)
+    public function waitForLoad($skipFunc)
     {
         $i = 0;
 
         while (
-            ($domUpdating = $this->browser->evaluateScript('return window.__dom_updating')) ||
-            $this->browser->evaluateScript('return window.__active_xhr')
+            ($domUpdating = $this->browser->evaluateScript('return window.carbonate_dom_updating')) ||
+            $this->browser->evaluateScript('return window.carbonate_active_xhr')
         ) {
-            if ($skip_func()) {
+            if ($skipFunc()) {
                 $this->logger->info("Found cached element, skipping DOM wait");
                 break;
             }
@@ -76,14 +76,14 @@ class SDK
                 $this->logger->info("Waiting for DOM update to finish");
             }
             else {
-                $this->logger->info("Waiting for XHR to finish");
+                $this->logger->info("Waiting for active Network to finish");
             }
 
-            if ($i > 20) {
+            if ($i > 240) {
                 throw new BrowserException("Waited too long for DOM/XHR update to finish");
             }
 
-            usleep(0.5 * 1000000);
+            usleep(0.25 * 1000000);
             $i++;
         }
     }
@@ -117,19 +117,39 @@ class SDK
         throw new FailedExtractionException('Could not extract actions');
     }
 
-    public function cacheInstruction($result, $instruction)
+    private function cacheInstruction($result, $instruction)
     {
         if ($this->cacheDir) {
-            if (!file_exists($this->cacheDir)) {
-                mkdir($this->cacheDir);
-            }
+            $this->instructionCache[$instruction] = $result;
+        }
+    }
+    private function writeCache()
+    {
+        if (!$this->cacheDir) {
+            throw new \LogicException("Cannot call writeCache without setting cacheDir");
+        }
 
-            if (!file_exists($this->cacheDir .'/'. Helpers::slugify($this->testName))) {
-                mkdir($this->cacheDir .'/'. Helpers::slugify($this->testName));
-            }
+        if (!$this->testName) {
+            throw new \LogicException("Test name not set, please call startTest first");
+        }
 
+        if (count($this->instructionCache) === 0) {
+            return;
+        }
+
+        if (!file_exists($this->cacheDir)) {
+            mkdir($this->cacheDir);
+        }
+
+        if (!file_exists($this->cacheDir .'/'. Helpers::slugify($this->testName))) {
+            mkdir($this->cacheDir .'/'. Helpers::slugify($this->testName));
+        }
+
+        foreach ($this->instructionCache as $instruction => $result) {
             file_put_contents($this->getCachePath($instruction), json_encode($result));
         }
+
+        $this->instructionCache = [];
     }
 
     private function cachedAssertions($instruction)
@@ -232,6 +252,7 @@ class SDK
     {
         foreach ($assertions as $assertion) {
             $result = $this->performAssertion($assertion);
+            $this->logger->info("Assertion result", ['assertion' => $result]);
 
             if (!$result) {
                 return false;
@@ -243,7 +264,10 @@ class SDK
     private function performAssertion($assertion)
     {
         $this->logger->info("Performing assertion", ['assertion' => $assertion['assertion']]);
-        return $this->browser->evaluateScript('return ' . $assertion['assertion']);
+        $this->logger->info('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; window.carbonate_assertion_result;');
+//        var_dump('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; window.carbonate_assertion_result;');
+//        exit;
+        return $this->browser->evaluateScript('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; return window.carbonate_assertion_result;');
     }
 
     private function cachedLookup($instruction)
@@ -296,6 +320,10 @@ class SDK
 
     public function startTest($testPrefix, $testName)
     {
+        if (count($this->instructionCache) > 0) {
+            throw new \LogicException("Instruction cache not empty, did you forget to call endTest()?");
+        }
+
         if ($this->logger instanceof Logger) {
             $this->logger->clearLogs();
         }
@@ -306,7 +334,9 @@ class SDK
 
     public function endTest()
     {
-        $this->browser->close();
+        if ($this->cacheDir) {
+            $this->writeCache();
+        }
     }
 
     public function load($url)
@@ -321,16 +351,16 @@ class SDK
         $this->browser->close();
     }
 
-    /**
-     * @return string
-     * @throws UnsupportedDriverActionException
-     * @throws \Behat\Mink\Exception\DriverException
-     */
-    public function getScreenshot()
-    {
-        $this->logger->info("Taking screenshot");
-        return $this->browser->getScreenshot();
-    }
+//    /**
+//     * @return string
+//     * @throws UnsupportedDriverActionException
+//     * @throws \Behat\Mink\Exception\DriverException
+//     */
+//    public function getScreenshot()
+//    {
+//        $this->logger->info("Taking screenshot");
+//        return $this->browser->getScreenshot();
+//    }
 
     public function whitelistNetwork($url)
     {
@@ -339,8 +369,24 @@ class SDK
 
     public function handleFailedTest(\Throwable $t)
     {
+        $this->instructionCache = [];
+
         if ($this->logger instanceof Logger) {
+            $logs = $this->browser->getLogs();
+
+            dump(array_column($logs, 'message'));
+
             throw new \Exception($this->logger->getLogs() .' '. $t->getMessage(), $t->getCode(), $t);
         }
+    }
+
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    public function getBrowser()
+    {
+        return $this->browser;
     }
 }

@@ -5,7 +5,7 @@ namespace Tests\End2End\Panther;
 use Carbonate\Api\Client;
 use Carbonate\SDK;
 use Carbonate\PhpUnit\Logger;
-use Carbonate\Tester\PantherBrowser;
+use Carbonate\Browser\PantherBrowser;
 use DMore\ChromeDriver\ChromeDriver;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Panther\Client as PantherClient;
@@ -17,26 +17,31 @@ class SelectTest extends PantherTestCase
     /**
      * @var PantherBrowser
      */
-    private $browser;
+    private static $browser;
 
     /**
      * @var SDK
      */
     private $sdk;
 
-    public function __construct(?string $name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
+    /**
+     * @var Client|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $client;
 
-        $this->browser = new PantherBrowser(PantherClient::createChromeClient());
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        self::$browser = new PantherBrowser(self::createPantherClient(['external_base_uri' => 'file:///']));
     }
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = $this->createStub(Client::class);
-        $this->sdk = new SDK($this->browser, null, null, null, null, $this->client);
+        $this->client = $this->createMock(Client::class);
+        $this->sdk = new SDK(self::$browser, null, null, null, null, $this->client);
         $this->sdk->startTest(__CLASS__, $this->getName());
     }
 
@@ -56,52 +61,57 @@ class SelectTest extends PantherTestCase
         parent::onNotSuccessfulTest($t);
     }
 
-    public function testSelectSuccessful()
+    public function testItShouldSelectTheOption()
     {
-        $this->client->method('extractActions')->willReturn([
+        $this->client->expects($this->once())->method('extractActions')->willReturn([
             ['action' => 'click', 'xpath' => '//select/option[text()="Two"]']
         ]);
 
-        $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "document.querySelector('select').value == '2'"]
+        $this->client->expects($this->once())->method('extractAssertions')->willReturn([
+            ['assertion' => "carbonate_assert(document.querySelector('select').value == '2');"]
         ]);
 
-        $this->sdk->load('file:///'. __DIR__ . '/../../fixtures/select.html');
+        $this->sdk->load(__DIR__ . '/../../fixtures/select.html');
         $this->sdk->action('select Two from the dropdown');
 
         $this->assertTrue($this->sdk->assertion('the dropdown should be set to Two'));
     }
 
-    public function testSelectNotSuccessful()
+    public function testShouldFailWhenTheAssertionIsWrong()
     {
-        $this->client->method('extractActions')->willReturn([
+        $this->client->expects($this->once())->method('extractActions')->willReturn([
             ['action' => 'click', 'xpath' => '//select/option[text()="Two"]']
         ]);
 
-        $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "document.querySelector('select').value == '3'"]
+        $this->client->expects($this->once())->method('extractAssertions')->willReturn([
+            ['assertion' => "carbonate_assert(document.querySelector('select').value == '3');"]
         ]);
 
-        $this->sdk->load('file:///'. __DIR__ . '/../../fixtures/select.html');
+        $this->sdk->load(__DIR__ . '/../../fixtures/select.html');
         $this->sdk->action('select Two from the dropdown');
 
         $this->assertFalse($this->sdk->assertion('the dropdown should be set to Three'));
     }
 
-    public function testLabelFor()
+    public function testItShouldSelectTheOptionThroughTheSelect()
     {
-        $this->client->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+        $this->client->expects($this->once())->method('extractActions')->willReturn([
+            ['action' => 'click', 'xpath' => '//select'],
+            ['action' => 'click', 'xpath' => '//select/option[text()="Two"]'],
         ]);
 
-        $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "document.querySelector('input').value == 'teststr'"]
+        $this->client->expects($this->once())->method('extractAssertions')->willReturn([
+            ['assertion' => "carbonate_assert(document.querySelector('select').value == '2');"]
         ]);
 
-        $this->sdk->load('file:///'. __DIR__ . '/../../fixtures/label.html');
-        $this->sdk->action('type "teststr" into the input');
+        $this->sdk->load(__DIR__ . '/../../fixtures/select.html');
+        $this->sdk->action('select Two from the dropdown');
 
-        $this->assertTrue($this->sdk->assertion('the input should have the contents "teststr"'));
+        $this->assertTrue($this->sdk->assertion('the dropdown should be set to Two'));
     }
 
+    public function testItShouldWorkForSelect2()
+    {
+        $this->markTestSkipped('Not currently supported');
+    }
 }

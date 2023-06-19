@@ -13,7 +13,7 @@ use Symfony\Component\Panther\PantherTestCase;
 use Throwable;
 use Symfony\Component\Panther\Client as PantherClient;
 
-class WaitTest extends PantherTestCase
+class WaitFailedTest extends PantherTestCase
 {
     /**
      * @var PantherBrowser
@@ -62,68 +62,60 @@ class WaitTest extends PantherTestCase
         parent::onNotSuccessfulTest($t);
     }
 
-    public function testItShouldWaitForXhrBeforePerformingActions()
+    public function testItShouldHandleFailedXhrWhenPerformingActions()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
             ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
         ]);
 
-        $this->sdk->load(__DIR__ . '/../../fixtures/wait_xhr.html');
+        $this->sdk->load(__DIR__ . '/../../fixtures/wait_xhr_failed.html');
 
         $this->sdk->action('type "teststr" into the input');
 
         $this->assertTrue(
             $this->sdk->getBrowser()->evaluateScript("return document.querySelector('input').value == 'teststr'")
         );
-
-        $this->assertStringContainsString('Waiting for active Network to finish', $this->sdk->getLogger()->getLogs());
     }
 
-    public function testItShouldWaitForXhrBeforePerformingAssertions()
+    public function testItShouldHandleFailedXhrWhenPerformingAssertions()
     {
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
             ['assertion' => "carbonate_assert(document.querySelector('input').value == '');"]
         ]);
 
-        $this->sdk->load(__DIR__ . '/../../fixtures/wait_xhr.html');
+        $this->sdk->load(__DIR__ . '/../../fixtures/wait_xhr_failed.html');
 
         $this->assertTrue(
             $this->sdk->assertion('the input should be empty')
         );
-
-        $this->assertStringContainsString('Waiting for active Network to finish', $this->sdk->getLogger()->getLogs());
     }
 
-    public function testItShouldWaitForFetchBeforePerformingActions()
+    public function testItShouldHandleFailedFetchWhenPerformingActions()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
             ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
         ]);
 
-        $this->sdk->load(__DIR__ . '/../../fixtures/wait_fetch.html');
+        $this->sdk->load(__DIR__ . '/../../fixtures/wait_fetch_failed.html');
 
         $this->sdk->action('type "teststr" into the input');
 
         $this->assertTrue(
             $this->sdk->getBrowser()->evaluateScript("return document.querySelector('input').value == 'teststr'")
         );
-
-        $this->assertStringContainsString('Waiting for active Network to finish', $this->sdk->getLogger()->getLogs());
     }
 
-    public function testItShouldWaitForFetchForAssertions()
+    public function testItShouldHandleFailedFetchForAssertions()
     {
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
             ['assertion' => "carbonate_assert(document.querySelector('input').value == '');"]
         ]);
 
-        $this->sdk->load(__DIR__ . '/../../fixtures/wait_fetch.html');
+        $this->sdk->load(__DIR__ . '/../../fixtures/wait_fetch_failed.html');
 
         $this->assertTrue(
             $this->sdk->assertion('the input should be empty')
-        )
-        ;
-        $this->assertStringContainsString('Waiting for active Network to finish', $this->sdk->getLogger()->getLogs());
+        );
     }
 
 }

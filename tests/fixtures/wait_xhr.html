@@ -9,7 +9,6 @@ Loading...
     httpRequest.onreadystatechange = function () {
         if (httpRequest.readyState === XMLHttpRequest.DONE) {
             if (httpRequest.status === 200) {
-                console.log(httpRequest);
                 document.body.innerHTML = '<label for="input">Test</label><input id="input" name="test" type="text" />';
             }
             else {
