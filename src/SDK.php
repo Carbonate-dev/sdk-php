@@ -264,9 +264,7 @@ class SDK
     private function performAssertion($assertion)
     {
         $this->logger->info("Performing assertion", ['assertion' => $assertion['assertion']]);
-        $this->logger->info('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; window.carbonate_assertion_result;');
-//        var_dump('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; window.carbonate_assertion_result;');
-//        exit;
+
         return $this->browser->evaluateScript('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; return window.carbonate_assertion_result;');
     }
 
