@@ -14,6 +14,16 @@ use Throwable;
 
 class RenderCachedTest extends PantherTestCase
 {
+    /**
+     * @var PantherBrowser
+     */
+    protected static $browser;
+
+    /**
+     * @var SDK
+     */
+    protected $sdk;
+
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
