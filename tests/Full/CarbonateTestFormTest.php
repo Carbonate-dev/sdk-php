@@ -8,6 +8,7 @@ use Carbonate\Browser\PantherBrowser;
 use Symfony\Component\Panther\Client as PantherClient;
 use Symfony\Component\Panther\PantherTestCase;
 use Tests\End2End\Panther\WaitTest;
+use Throwable;
 
 class CarbonateTestFormTest extends PantherTestCase
 {
@@ -25,7 +26,7 @@ class CarbonateTestFormTest extends PantherTestCase
     {
         parent::setUpBeforeClass();
 
-        self::$browser = new PantherBrowser(self::createPantherClient(['external_base_uri' => '']));
+        self::$browser = new PantherBrowser(self::createPantherClient(['external_base_uri' => 'https://testbot-website.vercel.app/']));
     }
 
     protected function setUp(): void
@@ -36,12 +37,25 @@ class CarbonateTestFormTest extends PantherTestCase
         $this->sdk->startTest(__CLASS__, $this->getName());
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->sdk->endTest();
+    }
+
+    protected function onNotSuccessfulTest(Throwable $t): void
+    {
+        if ($this->sdk) {
+            $this->sdk->handleFailedTest($t);
+        }
+
+        parent::onNotSuccessfulTest($t);
+    }
+
     public function testBirthdayEventType()
     {
-        $this->sdk->load(
-            # 'https://carbonate.dev/demo-form',
-            'https://testbot-website.vercel.app/demo-form'
-        );
+        $this->sdk->load('/demo-form');
 
         $this->sdk->action('chose Birthday as the event type');
 
