@@ -33,6 +33,8 @@ class RenderCachedTest extends PantherTestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->client = $this->createMock(Client::class);
         $this->sdk = new SDK(self::$browser, __DIR__ .'/'. pathinfo(__FILE__, PATHINFO_FILENAME), null, null, null, $this->client);
         $this->sdk->startTest(__CLASS__, $this->getName());
