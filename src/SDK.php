@@ -9,6 +9,8 @@ use Carbonate\Exceptions\FailedExtractionException;
 use Carbonate\Exceptions\InvalidXpathException;
 use Carbonate\PhpUnit\Logger;
 use Carbonate\Browser\BrowserInterface;
+use PHPUnit\Framework\IncompleteTest;
+use PHPUnit\Framework\SkippedTest;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -106,6 +108,8 @@ class SDK
 
     private function extractActions($instruction)
     {
+        $this->logger->debug("HTML", ['html' => $this->browser->getHtml()]);
+
         $actions = $this->client->extractActions($this->getTestName(), $instruction, $this->browser->getHtml());
 
         if (count($actions) > 0) {
@@ -370,7 +374,11 @@ class SDK
         $this->instructionCache = [];
 
         if ($this->logger instanceof Logger) {
-            throw new \Exception($this->logger->getLogs() .' '. $t->getMessage(), $t->getCode(), $t);
+            $logs = $this->logger->getLogs();
+
+            if ($logs && !($t instanceof IncompleteTest) && !($t instanceof SkippedTest)) {
+                throw new \Exception($logs .' '. $t->getMessage(), $t->getCode(), $t);
+            }
         }
     }
 
