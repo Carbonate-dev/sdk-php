@@ -370,10 +370,6 @@ class SDK
         $this->instructionCache = [];
 
         if ($this->logger instanceof Logger) {
-            $logs = $this->browser->getLogs();
-
-            dump(array_column($logs, 'message'));
-
             throw new \Exception($this->logger->getLogs() .' '. $t->getMessage(), $t->getCode(), $t);
         }
     }
