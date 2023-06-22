@@ -353,17 +353,6 @@ class SDK
         $this->browser->close();
     }
 
-//    /**
-//     * @return string
-//     * @throws UnsupportedDriverActionException
-//     * @throws \Behat\Mink\Exception\DriverException
-//     */
-//    public function getScreenshot()
-//    {
-//        $this->logger->info("Taking screenshot");
-//        return $this->browser->getScreenshot();
-//    }
-
     public function whitelistNetwork($url)
     {
         $this->networkWhitelist[] = $url;

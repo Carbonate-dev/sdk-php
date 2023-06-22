@@ -49,16 +49,6 @@ class PantherBrowser implements BrowserInterface
         $this->browser->quit();
     }
 
-//    /**
-//     * @return string
-//     * @throws UnsupportedDriverActionException
-//     * @throws \Behat\Mink\Exception\DriverException
-//     */
-//    public function getScreenshot()
-//    {
-//        return $this->browser->takeScreenshot();
-//    }
-
     /**
      * @param $xpath
      * @return \Facebook\WebDriver\WebDriverElement[]
