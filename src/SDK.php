@@ -206,7 +206,7 @@ class SDK
     {
         $previous_actions = [];
         foreach ($actions as $action) {
-            $this->logger->info("Performing action", ['action' => $action]);
+            $this->logger->notice("Performing action", ['action' => $action]);
             $elements = $this->browser->findByXpath($action['xpath']);
 
             if (count($elements) == 0) {
@@ -267,7 +267,7 @@ class SDK
     }
     private function performAssertion($assertion)
     {
-        $this->logger->info("Performing assertion", ['assertion' => $assertion['assertion']]);
+        $this->logger->notice("Performing assertion", ['assertion' => $assertion['assertion']]);
 
         return $this->browser->evaluateScript('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; return window.carbonate_assertion_result;');
     }
