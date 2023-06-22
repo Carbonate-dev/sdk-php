@@ -1,6 +1,6 @@
 {
-  "name": "carbonate/php",
-  "description": "Run UI tests using AI",
+  "name": "carbonate/sdk",
+  "description": "Carbonate turns simple language driven instructions into end-to-end tests",
   "type": "library",
   "license": "MIT",
   "autoload": {
