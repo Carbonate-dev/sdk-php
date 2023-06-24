@@ -2,11 +2,11 @@
 
 namespace Carbonate\Browser;
 
-use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Carbonate\Action;
 use Carbonate\Exceptions\BrowserException;
 use Facebook\WebDriver\Exception\JavascriptErrorException;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverElement;
 use Symfony\Component\Panther\Client as PantherClient;
 
 class PantherBrowser implements BrowserInterface
@@ -51,7 +51,7 @@ class PantherBrowser implements BrowserInterface
 
     /**
      * @param $xpath
-     * @return \Facebook\WebDriver\WebDriverElement[]
+     * @return WebDriverElement[]
      */
     function findByXpath($xpath)
     {
@@ -60,7 +60,7 @@ class PantherBrowser implements BrowserInterface
 
     /**
      * @param $xpath
-     * @return \Facebook\WebDriver\WebDriverElement[]
+     * @return WebDriverElement[]
      */
     function findById($id)
     {
@@ -81,8 +81,8 @@ class PantherBrowser implements BrowserInterface
     }
 
     /**
-     * @param $action
-     * @param array|\Facebook\WebDriver\WebDriverElement[] $elements
+     * @param array $action
+     * @param array|WebDriverElement[] $elements
      */
     public function performAction($action, array $elements)
     {

@@ -2,7 +2,6 @@
 
 namespace Carbonate;
 
-use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Carbonate\Api\Client;
 use Carbonate\Exceptions\BrowserException;
 use Carbonate\Exceptions\FailedExtractionException;

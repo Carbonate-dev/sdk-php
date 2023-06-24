@@ -2,7 +2,7 @@
 
 namespace Carbonate\Browser;
 
-use Behat\Mink\Exception\UnsupportedDriverActionException;
+use Facebook\WebDriver\WebDriverElement;
 
 interface BrowserInterface
 {
@@ -14,13 +14,13 @@ interface BrowserInterface
 
     /**
      * @param $xpath
-     * @return \Behat\Mink\Element\NodeElement[]
+     * @return WebDriverElement[]
      */
     function findByXpath($xpath);
 
     /**
      * @param $xpath
-     * @return \Behat\Mink\Element\NodeElement[]
+     * @return WebDriverElement[]
      */
     function findById($id);
 
@@ -30,9 +30,8 @@ interface BrowserInterface
     public function evaluateScript($script);
 
     /**
-     * @param $action
-     * @param array $elements
-     * @return array|\Behat\Mink\Element\NodeElement[]
+     * @param array $action
+     * @param array|WebDriverElement[] $elements
      */
     public function performAction($action, array $elements);
 }
