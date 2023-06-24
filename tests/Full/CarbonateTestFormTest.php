@@ -26,7 +26,7 @@ class CarbonateTestFormTest extends PantherTestCase
     {
         parent::setUpBeforeClass();
 
-        self::$browser = new PantherBrowser(self::createPantherClient(['external_base_uri' => 'https://testbot-website.vercel.app/']));
+        self::$browser = new PantherBrowser(self::createPantherClient(['external_base_uri' => 'https://carbonate.dev/']));
     }
 
     protected function setUp(): void
