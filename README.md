@@ -4,7 +4,7 @@
   </h1>
 </p>
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Carbonate-dev/sdk-node/php.yml)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Carbonate-dev/sdk-php/php.yml)
 
 Carbonate turns simple language driven instructions into end-to-end tests. This SDK lets you integrate it directly into your test suite.
 
