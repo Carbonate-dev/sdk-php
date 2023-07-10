@@ -33,7 +33,7 @@ class Client
     ) {
         $this->apiUserId = $apiUserId ?: getenv('CARBONATE_USER_ID');
         $this->apiKey = $apiKey ?: getenv('CARBONATE_API_KEY');
-        $this->apiUrl = $apiUrl ?: 'https://api.staging.carbonate.dev/';
+        $this->apiUrl = $apiUrl ?: 'https://api.carbonate.dev/';
         $this->client = $client ?: new GuzzleClient();
 
         if (!$this->apiUserId) {

@@ -65,7 +65,7 @@ class WhitelistTest extends PantherTestCase
             ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
         ]);
 
-        $this->sdk->whitelistNetwork('https://api.staging.carbonate.dev/internal/test_wait*');
+        $this->sdk->whitelistNetwork('https://api.carbonate.dev/internal/test_wait*');
 
         $this->sdk->load(__DIR__ . '/../../fixtures/whitelist_xhr.html');
 
@@ -81,7 +81,7 @@ class WhitelistTest extends PantherTestCase
             ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
         ]);
 
-        $this->sdk->whitelistNetwork('https://api.staging.carbonate.dev/internal/test_wait*');
+        $this->sdk->whitelistNetwork('https://api.carbonate.dev/internal/test_wait*');
 
         $this->sdk->load(__DIR__ . '/../../fixtures/whitelist_fetch.html');
 
