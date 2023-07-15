@@ -268,7 +268,7 @@ class SDK
     {
         $this->logger->notice("Performing assertion", ['assertion' => $assertion['assertion']]);
 
-        return $this->browser->evaluateScript('window.carbonate_reset_assertion_result(); '. $assertion['assertion'] .'; return window.carbonate_assertion_result;');
+        return $this->browser->evaluateScript('window.carbonate_reset_assertion_result(); (function() { ' . $assertion['assertion'] . ' })(); return window.carbonate_assertion_result;');
     }
 
     private function cachedLookup($instruction)
