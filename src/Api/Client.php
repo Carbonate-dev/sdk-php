@@ -85,7 +85,7 @@ class Client
             return [];
         }
 
-        return $actions['actions'];
+        return $actions;
     }
 
     public function extractAssertions($testName, $instruction, $html): array
@@ -100,7 +100,7 @@ class Client
             return [];
         }
 
-        return $assertion['assertions'];
+        return $assertion;
     }
 
     public function extractLookup($testName, $instruction, $html): ?array
@@ -109,6 +109,20 @@ class Client
             'test_name' => $testName,
             'story' => $instruction,
             'html' => $html,
+        ]);
+
+        return $lookup;
+    }
+
+    public function uploadRecording($testName, array $recording, \DateTimeInterface $startedAt, array $actions, array $assertions, array $lookups): ?bool
+    {
+        $lookup = $this->callApi('test/recording', [
+            'test_name' => $testName,
+            'actions' => $actions,
+            'assertions' => $assertions,
+            'lookups' => $lookups,
+            'started_at' => $startedAt->format(\DateTimeInterface::ATOM),
+            'packed' => base64_encode(gzencode(json_encode($recording))),
         ]);
 
         return $lookup;

@@ -5,11 +5,11 @@
     const activeXhr = [];
 
     function log(message) {
-        console.log('[' + new Date().toISOString().slice(11) + '] ' + message);
+        console.log(new Date().toISOString().slice(11) + ' - ' + message);
     }
 
     function warn(message) {
-        console.warn('[' + new Date().toISOString().slice(11) + '] ' + message);
+        console.warn(new Date().toISOString().slice(11) + ' - ' + message);
     }
 
     function debounce(func, delay) {

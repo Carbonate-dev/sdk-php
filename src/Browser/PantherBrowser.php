@@ -18,8 +18,9 @@ class PantherBrowser implements BrowserInterface
     {
         $this->browser = $driver;
 
-        $injectJsPath = __DIR__ . "/../../resources/carbonate.js";
-        $this->injectJs = file_get_contents($injectJsPath);
+        $carbonateJs = file_get_contents(__DIR__ . "/../../resources/carbonate.js");
+        $rrwebJs = file_get_contents(__DIR__ . "/../../resources/rrweb.js");
+        $this->injectJs = $carbonateJs . $rrwebJs;
     }
 
     public function getHtml()
@@ -110,6 +111,14 @@ class PantherBrowser implements BrowserInterface
         } elseif ($action['action'] == Action::KEY) {
             $elements[0]->sendKeys($action['key']);
         }
+    }
+
+    public function record($name, array $data = [])
+    {
+        $this->browser->executeScript(
+            "window.carbonate_rrweb.record.addCustomEvent(arguments[0], arguments[1])",
+            [$name, $data]
+        );
     }
 
     public function getLogs()

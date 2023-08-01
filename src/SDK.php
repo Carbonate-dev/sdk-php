@@ -35,6 +35,10 @@ class SDK
     private $cacheDir;
     private $networkWhitelist = [];
     private $instructionCache = [];
+    private $startedAt;
+    private $actionIds = [];
+    private $assertionIds = [];
+    private $lookupIds = [];
 
     public function __construct(
         BrowserInterface $browser,
@@ -63,6 +67,8 @@ class SDK
     public function waitForLoad($skipFunc)
     {
         $i = 0;
+        $loggedDomUpdating = false;
+        $loggedNetworkUpdating = false;
 
         while (
             ($domUpdating = $this->browser->evaluateScript('return window.carbonate_dom_updating')) ||
@@ -74,9 +80,11 @@ class SDK
             }
 
             if ($domUpdating) {
-                $this->logger->info("Waiting for DOM update to finish");
+                if (!$loggedDomUpdating) {
+                    $this->logger->info("Waiting for DOM update to finish");
+                }
             }
-            else {
+            else if (!$loggedNetworkUpdating) {
                 $this->logger->info("Waiting for active Network to finish");
             }
 
@@ -107,8 +115,6 @@ class SDK
 
     private function extractActions($instruction)
     {
-        $this->logger->debug("HTML", ['html' => $this->browser->getHtml()]);
-
         $actions = $this->client->extractActions($this->getTestName(), $instruction, $this->browser->getHtml());
 
         if (count($actions) > 0) {
@@ -170,9 +176,9 @@ class SDK
     {
         $assertions = $this->client->extractAssertions($this->getTestName(), $instruction, $this->browser->getHtml());
 
-        if (count($assertions) > 0) {
-            $this->logger->info("Successfully extracted assertions", ['assertions' => $assertions]);
-            $this->cacheInstruction($assertions, $instruction);
+        if (count($assertions['assertions']) > 0) {
+            $this->logger->info("Successfully extracted assertions", ['assertions' => $assertions['assertions']]);
+            $this->cacheInstruction($assertions['assertions'], $instruction);
             return $assertions;
         }
 
@@ -182,6 +188,8 @@ class SDK
     public function action($instruction)
     {
         $this->logger->info("Querying action", ['test_name' => $this->getTestName(), 'instruction' => $instruction]);
+        $this->browser->record('carbonate-instruction', ['instruction' => $instruction, 'type' => 'action']);
+
         $actions = $this->cachedActions($instruction);
 
         $this->waitForLoad(function () use ($actions) {
@@ -194,11 +202,14 @@ class SDK
             $this->logger->notice("No actions found, extracting from page");
             $actions = $this->extractActions($instruction);
         }
-        else if (count($this->browser->findByXpath($actions[0]['xpath'])) === 0) {
-            throw new InvalidXpathException("Could not find element for xpath: " . $actions[0]['xpath']);
+
+        $this->actionIds[] = $actions['version'];
+
+        if (count($this->browser->findByXpath($actions['actions'][0]['xpath'])) === 0) {
+            throw new InvalidXpathException("Could not find element for xpath: " . $actions['actions'][0]['xpath']);
         }
 
-        $this->performActions($actions);
+        $this->performActions($actions['actions']);
     }
 
     private function performActions($actions)
@@ -220,6 +231,7 @@ class SDK
                 return $previous_actions;
             }
 
+            $this->browser->record('carbonate-action', $action);
             $this->browser->performAction($action, $elements);
             $previous_actions[] = $action;
         }
@@ -230,6 +242,8 @@ class SDK
     public function assertion($instruction)
     {
         $this->logger->info("Querying assertion", ['test_name' => $this->getTestName(), 'instruction' => $instruction]);
+        $this->browser->record('carbonate-instruction', ['instruction' => $instruction, 'type' => 'assertion']);
+
         $assertions = $this->cachedAssertions($instruction);
 
         $this->waitForLoad(function () use ($assertions) {
@@ -248,7 +262,8 @@ class SDK
             $assertions = $this->extractAssertions($instruction);
         }
 
-        return $this->performAssertions($assertions);
+        $this->assertionIds[] = $assertions['version'];
+        return $this->performAssertions($assertions['assertions']);
     }
 
     private function performAssertions(array $assertions): bool
@@ -267,6 +282,7 @@ class SDK
     private function performAssertion($assertion)
     {
         $this->logger->notice("Performing assertion", ['assertion' => $assertion['assertion']]);
+        $this->browser->record('carbonate-assertion', $assertion);
 
         return $this->browser->evaluateScript('window.carbonate_reset_assertion_result(); (function() { ' . $assertion['assertion'] . ' })(); return window.carbonate_assertion_result;');
     }
@@ -310,6 +326,7 @@ class SDK
             $lookup = $this->extractLookup($instruction);
         }
 
+        $this->lookupIds[] = $lookup['version'];
         $elements = $this->browser->findByXpath($lookup['xpath']);
 
         if (count($elements) === 0) {
@@ -331,6 +348,10 @@ class SDK
 
         $this->testPrefix = $testPrefix;
         $this->testName = $testName;
+        $this->startedAt = new \DateTimeImmutable();
+        $this->actionIds = [];
+        $this->assertionIds = [];
+        $this->lookupIds = [];
     }
 
     public function endTest()
@@ -340,10 +361,18 @@ class SDK
         }
     }
 
+    public function uploadRecording()
+    {
+        $recording = $this->browser->evaluateScript('return window.carbonate_rrweb_recording');
+
+        $this->client->uploadRecording($this->getTestName(), $recording, $this->startedAt, $this->actionIds, $this->assertionIds, $this->lookupIds);
+    }
+
     public function load($url)
     {
         $this->logger->info("Loading page", ['url' => $url, 'whitelist' => $this->networkWhitelist]);
         $this->browser->load($url, $this->networkWhitelist);
+        $this->browser->record('carbonate-load', ['url' => $url]);
     }
 
     public function close()
@@ -363,6 +392,12 @@ class SDK
 
         if ($this->logger instanceof Logger) {
             $logs = $this->logger->getLogs();
+            $this->browser->record('carbonate-error', [
+                'message' => $t->getMessage(),
+                'trace' => $t->getTraceAsString(),
+            ]);
+
+            $this->uploadRecording();
 
             if ($logs && !($t instanceof IncompleteTest) && !($t instanceof SkippedTest)) {
                 throw new \Exception($logs .' '. $t->getMessage(), $t->getCode(), $t);
