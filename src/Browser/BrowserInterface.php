@@ -12,6 +12,8 @@ interface BrowserInterface
 
     public function close();
 
+    public function endTest();
+
     /**
      * @param $xpath
      * @return WebDriverElement[]

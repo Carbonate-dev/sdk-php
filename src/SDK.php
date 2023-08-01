@@ -107,8 +107,6 @@ class SDK
 
     private function extractActions($instruction)
     {
-        $this->logger->debug("HTML", ['html' => $this->browser->getHtml()]);
-
         $actions = $this->client->extractActions($this->getTestName(), $instruction, $this->browser->getHtml());
 
         if (count($actions) > 0) {
@@ -335,6 +333,8 @@ class SDK
 
     public function endTest()
     {
+        $this->browser->endTest();
+
         if ($this->cacheDir) {
             $this->writeCache();
         }

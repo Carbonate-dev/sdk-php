@@ -49,6 +49,11 @@ class PantherBrowser implements BrowserInterface
         $this->browser->quit();
     }
 
+    public function endTest()
+    {
+        $this->browser->quit();
+    }
+
     /**
      * @param $xpath
      * @return WebDriverElement[]
