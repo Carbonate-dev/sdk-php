@@ -64,11 +64,17 @@ class SelectTest extends PantherTestCase
     public function testItShouldSelectTheOption()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'click', 'xpath' => '//select/option[text()="Two"]']
+            "actions" => [
+                ['action' => 'click', 'xpath' => '//select/option[text()="Two"]']
+            ],
+            "version" => "test1"
         ]);
 
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('select').value == '2');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('select').value == '2');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/select.html');
@@ -80,11 +86,17 @@ class SelectTest extends PantherTestCase
     public function testShouldFailWhenTheAssertionIsWrong()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'click', 'xpath' => '//select/option[text()="Two"]']
+            "actions" => [
+                ['action' => 'click', 'xpath' => '//select/option[text()="Two"]']
+            ],
+            "version" => "test1"
         ]);
 
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('select').value == '3');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('select').value == '3');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/select.html');
@@ -96,12 +108,18 @@ class SelectTest extends PantherTestCase
     public function testItShouldSelectTheOptionThroughTheSelect()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'click', 'xpath' => '//select'],
-            ['action' => 'click', 'xpath' => '//select/option[text()="Two"]'],
+            "actions" => [
+                ['action' => 'click', 'xpath' => '//select'],
+                ['action' => 'click', 'xpath' => '//select/option[text()="Two"]'],
+            ],
+            "version" => "test1"
         ]);
 
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('select').value == '2');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('select').value == '2');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/select.html');

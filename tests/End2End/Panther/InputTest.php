@@ -98,13 +98,19 @@ class InputTest extends PantherTestCase
     public function testItShouldFillInTheInput($name, $xpath, $value)
     {
         $this->client->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => $xpath, 'text' => $value]
+            "actions" => [
+                ['action' => 'type', 'xpath' => $xpath, 'text' => $value]
+            ],
+            "version" => "test1"
         ]);
 
         $encodedValue = json_encode($value);
 
         $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('#{$name}').value == ${encodedValue});"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('#{$name}').value == ${encodedValue});"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load( __DIR__ . '/../../fixtures/input.html');
@@ -121,13 +127,19 @@ class InputTest extends PantherTestCase
     public function testItShouldClickTheElement($name, $xpath, $value)
     {
         $this->client->method('extractActions')->willReturn([
-            ['action' => 'click', 'xpath' => $xpath]
+            "actions" => [
+                ['action' => 'click', 'xpath' => $xpath]
+            ],
+            "version" => "test1"
         ]);
 
         $encodedValue = json_encode($value);
 
         $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('#{$name}').value == ${encodedValue});"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('#{$name}').value == ${encodedValue});"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load( __DIR__ . '/../../fixtures/input.html');
@@ -141,11 +153,17 @@ class InputTest extends PantherTestCase
     public function testItShouldFillInTheInputWhenGivenALabel()
     {
         $this->client->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            "actions" => [
+                ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            ],
+            "version" => "test1"
         ]);
 
         $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('input').value == 'teststr');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('input').value == 'teststr');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/label.html');

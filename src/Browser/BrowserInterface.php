@@ -33,9 +33,9 @@ interface BrowserInterface
      * @param array $action
      * @param array|WebDriverElement[] $elements
      */
-    public function performAction($action, array $elements);
+    public function performAction(array $action, array $elements);
 
-    public function record($instruction, array $action);
+    public function record($name, array $data);
 
     public function getLogs();
 }

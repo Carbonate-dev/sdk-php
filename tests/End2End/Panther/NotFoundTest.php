@@ -65,7 +65,10 @@ class NotFoundTest extends PantherTestCase
     public function testItShouldErrorIfXpathIsNotFoundForAnAction()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'click', 'xpath' => '//select//option[text()=\'Birthday\']']
+            "actions" => [
+                ['action' => 'click', 'xpath' => '//select//option[text()=\'Birthday\']']
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/select.html');
@@ -77,7 +80,7 @@ class NotFoundTest extends PantherTestCase
     public function testItShouldErrorIfXpathIsNotFoundForALookup()
     {
         $this->client->expects($this->once())->method('extractLookup')->willReturn(
-            ['xpath' => "//select//option[text()='Birthday']"]
+            ['xpath' => "//select//option[text()='Birthday']", 'version' => 'test1']
         );
 
         $this->sdk->load(__DIR__ . '/../../fixtures/select.html');

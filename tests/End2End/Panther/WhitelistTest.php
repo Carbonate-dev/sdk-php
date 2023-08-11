@@ -62,7 +62,10 @@ class WhitelistTest extends PantherTestCase
     public function testItShouldNotWaitForWhitelistedXhr()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            "actions" => [
+                ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->whitelistNetwork('https://api.carbonate.dev/internal/test_wait*');
@@ -78,7 +81,10 @@ class WhitelistTest extends PantherTestCase
     public function testItShouldNotWaitForWhitelistedFetch()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            "actions" => [
+                ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->whitelistNetwork('https://api.carbonate.dev/internal/test_wait*');

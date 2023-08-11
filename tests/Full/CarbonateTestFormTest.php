@@ -5,6 +5,7 @@ namespace Tests\Full;
 use Carbonate\Api\Client;
 use Carbonate\SDK;
 use Carbonate\Browser\PantherBrowser;
+use Facebook\WebDriver\WebDriverSelect;
 use Symfony\Component\Panther\Client as PantherClient;
 use Symfony\Component\Panther\PantherTestCase;
 use Tests\End2End\Panther\WaitTest;
@@ -53,19 +54,33 @@ class CarbonateTestFormTest extends PantherTestCase
         parent::onNotSuccessfulTest($t);
     }
 
-    public function testBirthdayEventType()
+
+    public function testSelectBirthdayFromTheDropdown()
     {
-        $this->sdk->load('/demo-form');
-
-        $this->sdk->action('chose Birthday as the event type');
-
-        $this->assertTrue(
-            $this->sdk->assertion('the event type should be Birthday')
+        $this->sdk->load(
+            'https://carbonate.dev/demo-form.html'
         );
 
-        $this->assertEquals(
+        $this->sdk->action('select Birthday from the event type dropdown');
+
+        $this->assertTrue(
+            $this->sdk->assertion('the event type dropdown should be set to Birthday')
+        );
+    }
+
+    public function testSelectBirthdayFromTheDropdownAdvanced()
+    {
+        $this->sdk->load(
+            'https://carbonate.dev/demo-form.html'
+        );
+
+        $select = new WebDriverSelect($this->sdk->lookup('the event type dropdown'));
+
+        $select->selectByVisibleText('Birthday');
+
+        $this->assertSame(
             'Birthday',
-            $this->sdk->lookup('the event type dropdown')->getAttribute('value')
+            $select->getFirstSelectedOption()->getAttribute('value')
         );
     }
 }

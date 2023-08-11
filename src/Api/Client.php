@@ -75,56 +75,40 @@ class Client
 
     public function extractActions($testName, $instruction, $html): array
     {
-        $actions = $this->callApi('actions/extract', [
+        return $this->callApi('actions/extract', [
             'test_name' => $testName,
             'story' => $instruction,
             'html' => $html,
         ]);
-
-        if ($actions === null) {
-            return [];
-        }
-
-        return $actions;
     }
 
     public function extractAssertions($testName, $instruction, $html): array
     {
-        $assertion = $this->callApi('assertions/extract', [
+        return $this->callApi('assertions/extract', [
             'test_name' => $testName,
             'story' => $instruction,
             'html' => $html,
         ]);
-
-        if ($assertion === null) {
-            return [];
-        }
-
-        return $assertion;
     }
 
     public function extractLookup($testName, $instruction, $html): ?array
     {
-        $lookup = $this->callApi('lookup/extract', [
+        return $this->callApi('lookup/extract', [
             'test_name' => $testName,
             'story' => $instruction,
             'html' => $html,
         ]);
-
-        return $lookup;
     }
 
-    public function uploadRecording($testName, array $recording, \DateTimeInterface $startedAt, array $actions, array $assertions, array $lookups): ?bool
+    public function uploadRecording($testName, array $recording, \DateTimeInterface $startedAt, array $actionIds, array $assertionIds, array $lookupIds): ?bool
     {
-        $lookup = $this->callApi('test/recording', [
+        return $this->callApi('test/recording', [
             'test_name' => $testName,
-            'actions' => $actions,
-            'assertions' => $assertions,
-            'lookups' => $lookups,
+            'actions' => $actionIds,
+            'assertions' => $assertionIds,
+            'lookups' => $lookupIds,
             'started_at' => $startedAt->format(\DateTimeInterface::ATOM),
             'packed' => base64_encode(gzencode(json_encode($recording))),
         ]);
-
-        return $lookup;
     }
 }

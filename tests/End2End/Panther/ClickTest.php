@@ -71,13 +71,18 @@ class ClickTest extends PantherTestCase
      */
     public function testItShouldClickTheElement($name, $xpath)
     {
-        // TODO: Add expects
         $this->client->method('extractActions')->willReturn([
-            ['action' => 'click', 'xpath' => $xpath]
+            "actions" => [
+                ['action' => 'click', 'xpath' => $xpath]
+            ],
+            "version" => "test1"
         ]);
 
         $this->client->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(window['{$name}_clicked'] === true);"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(window['{$name}_clicked'] === true);"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load( __DIR__ . '/../../fixtures/click.html');

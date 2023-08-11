@@ -61,7 +61,10 @@ class RenderTest extends PantherTestCase
     public function testItShouldWaitForRendersToFinishBeforePerformingActions()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            "actions" => [
+                ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/render.html');
@@ -78,7 +81,10 @@ class RenderTest extends PantherTestCase
     public function testItShouldWaitForRendersToFinishBeforePerformingAssertions()
     {
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('label').innerText == 'Test');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('label').innerText == 'Test');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/render.html');

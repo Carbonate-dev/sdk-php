@@ -85,7 +85,7 @@ class PantherBrowser implements BrowserInterface
      * @param array $action
      * @param array|WebDriverElement[] $elements
      */
-    public function performAction($action, array $elements)
+    public function performAction(array $action, array $elements)
     {
         if ($action['action'] == Action::CLICK) {
             $elements[0]->click();

@@ -82,10 +82,12 @@ class SDK
             if ($domUpdating) {
                 if (!$loggedDomUpdating) {
                     $this->logger->info("Waiting for DOM update to finish");
+                    $loggedDomUpdating = true;
                 }
             }
             else if (!$loggedNetworkUpdating) {
                 $this->logger->info("Waiting for active Network to finish");
+                $loggedNetworkUpdating = true;
             }
 
             if ($i > 240) {
@@ -105,7 +107,7 @@ class SDK
             return $actions;
         }
 
-        return [];
+        return null;
     }
 
     public function getCachePath($instruction)
@@ -117,8 +119,8 @@ class SDK
     {
         $actions = $this->client->extractActions($this->getTestName(), $instruction, $this->browser->getHtml());
 
-        if (count($actions) > 0) {
-            $this->logger->info("Successfully extracted actions", ['actions' => $actions]);
+        if (count($actions['actions']) > 0) {
+            $this->logger->info("Successfully extracted actions", ['actions' => $actions['actions']]);
             $this->cacheInstruction($actions, $instruction);
             return $actions;
         }
@@ -169,7 +171,7 @@ class SDK
             return $assertions;
         }
 
-        return [];
+        return null;
     }
 
     private function extractAssertions($instruction)
@@ -178,7 +180,7 @@ class SDK
 
         if (count($assertions['assertions']) > 0) {
             $this->logger->info("Successfully extracted assertions", ['assertions' => $assertions['assertions']]);
-            $this->cacheInstruction($assertions['assertions'], $instruction);
+            $this->cacheInstruction($assertions, $instruction);
             return $assertions;
         }
 
@@ -193,12 +195,12 @@ class SDK
         $actions = $this->cachedActions($instruction);
 
         $this->waitForLoad(function () use ($actions) {
-            return count($actions) > 0 && Helpers::all($actions, function (array $action) {
+            return $actions !== null && Helpers::all($actions['actions'], function (array $action) {
                 return count($this->browser->findByXpath($action['xpath'])) > 0;
             });
         });
 
-        if (count($actions) == 0) {
+        if ($actions === null) {
             $this->logger->notice("No actions found, extracting from page");
             $actions = $this->extractActions($instruction);
         }
@@ -247,7 +249,7 @@ class SDK
         $assertions = $this->cachedAssertions($instruction);
 
         $this->waitForLoad(function () use ($assertions) {
-            return count($assertions) > 0 && Helpers::all($assertions, function (array $assertion) {
+            return $assertions !== null && Helpers::all($assertions['assertions'], function (array $assertion) {
                 try {
                     $this->performAssertion($assertion);
                     return true;
@@ -257,7 +259,7 @@ class SDK
             });
         });
 
-        if (count($assertions) === 0) {
+        if ($assertions === null) {
             $this->logger->notice("No assertions found, extracting from page");
             $assertions = $this->extractAssertions($instruction);
         }
@@ -389,15 +391,15 @@ class SDK
     public function handleFailedTest(\Throwable $t)
     {
         $this->instructionCache = [];
+        $this->browser->record('carbonate-error', [
+            'message' => $t->getMessage(),
+            'trace' => $t->getTraceAsString(),
+        ]);
+
+        $this->uploadRecording();
 
         if ($this->logger instanceof Logger) {
             $logs = $this->logger->getLogs();
-            $this->browser->record('carbonate-error', [
-                'message' => $t->getMessage(),
-                'trace' => $t->getTraceAsString(),
-            ]);
-
-            $this->uploadRecording();
 
             if ($logs && !($t instanceof IncompleteTest) && !($t instanceof SkippedTest)) {
                 throw new \Exception($logs .' '. $t->getMessage(), $t->getCode(), $t);

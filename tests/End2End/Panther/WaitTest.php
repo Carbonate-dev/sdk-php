@@ -65,7 +65,10 @@ class WaitTest extends PantherTestCase
     public function testItShouldWaitForXhrBeforePerformingActions()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            "actions" => [
+                ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/wait_xhr.html');
@@ -82,7 +85,10 @@ class WaitTest extends PantherTestCase
     public function testItShouldWaitForXhrBeforePerformingAssertions()
     {
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('input').value == '');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('input').value == '');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/wait_xhr.html');
@@ -97,7 +103,10 @@ class WaitTest extends PantherTestCase
     public function testItShouldWaitForFetchBeforePerformingActions()
     {
         $this->client->expects($this->once())->method('extractActions')->willReturn([
-            ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            "actions" => [
+                ['action' => 'type', 'xpath' => '//label[@for="input"]', 'text' => 'teststr']
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/wait_fetch.html');
@@ -114,7 +123,10 @@ class WaitTest extends PantherTestCase
     public function testItShouldWaitForFetchForAssertions()
     {
         $this->client->expects($this->once())->method('extractAssertions')->willReturn([
-            ['assertion' => "carbonate_assert(document.querySelector('input').value == '');"]
+            "assertions" => [
+                ['assertion' => "carbonate_assert(document.querySelector('input').value == '');"]
+            ],
+            "version" => "test1"
         ]);
 
         $this->sdk->load(__DIR__ . '/../../fixtures/wait_fetch.html');
